@@ -35,9 +35,17 @@ ANSIBLE_USER=ubuntu
 ```
 6. Verify DNS setup (DNS propagation usually takes between 15–60 minutes):
 ```bash
-dig NS yourdomain.com
-dig ns1.yourdomain.com
-dig ns2.yourdomain.com
-dig @IP2 yourdomain.com
-dig @IP3 yourdomain.com
+$ dig NS yourdomain.com
+;; ANSWER SECTION:
+yourdomain.com.		3529	IN	NS	ns2.yourdomain.com.
+yourdomain.com.		3529	IN	NS	ns1.yourdomain.com.
+$ dig ns1.yourdomain.com
+;; ANSWER SECTION:
+ns1.yourdomain.com.	3330	IN	A	IP2
+$ dig ns2.yourdomain.com
+;; ANSWER SECTION:
+ns2.yourdomain.com.     3330    IN      A       IP3
+$ dig mail.yourdomain.com
+;; ANSWER SECTION:
+mail.yourdomain.com.	3456	IN	A	IP1
 ```
