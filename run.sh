@@ -1,19 +1,43 @@
 #!/bin/bash
 set -e
 
-# Export variables from .env
-set -a
-source .env
-set +a
+# Usage:
+#   ./run.sh [domain] stage_id
+# Examples:
+#   ./run.sh stage1
+#   ./run.sh yourdomain.com stage3
 
-# Handle the stage argument
-STAGE=$1
-
-if [ -z "$STAGE" ]; then
-  echo "Usage: $0 <stage1|stage2|stage3>"
+# --- Parse arguments ---
+if [[ $# -eq 1 ]]; then
+  DOMAIN_FROM_ARG=""
+  STAGE="$1"
+elif [[ $# -eq 2 ]]; then
+  DOMAIN_FROM_ARG="$1"
+  STAGE="$2"
+else
+  echo "Usage: $0 [domain] stage_id"
   exit 1
 fi
 
+# --- Load .env file safely ---
+if [[ ! -f .env ]]; then
+  echo ".env file not found! Run 'cp example.env .env' first."
+  exit 1
+fi
+
+set -o allexport
+source <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env | sed 's/\r$//')
+set +o allexport
+
+# --- Override DOMAIN if passed ---
+if [[ -n "$DOMAIN_FROM_ARG" ]]; then
+  export DOMAIN="$DOMAIN_FROM_ARG"
+  echo "🔄 Overriding domain from argument: DOMAIN=$DOMAIN"
+else
+  echo "📦 Using domain from .env: DOMAIN=$DOMAIN"
+fi
+
+# --- Set up stage-based environment ---
 case "$STAGE" in
   stage1)
     export ENABLE_SPF=false
@@ -28,12 +52,13 @@ case "$STAGE" in
     export ENABLE_DKIM=true
     ;;
   *)
-    echo "Invalid stage: $STAGE"
-    echo "Valid options: stage1, stage2, stage3"
+    echo "❌ Unknown stage: $STAGE"
+    echo "Usage: $0 [domain] {stage1|stage2|stage3}"
     exit 1
     ;;
 esac
 
-echo "Running $STAGE (ENABLE_SPF=$ENABLE_SPF, ENABLE_DKIM=$ENABLE_DKIM)"
+# --- Run ansible ---
+echo "🚀 Running Ansible for $DOMAIN ($STAGE)..."
 ansible-playbook -i inventory.yml playbook.yml
 

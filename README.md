@@ -5,7 +5,7 @@ This repository contains Ansible playbooks to configure:
 - A **BIND9 master DNS server**
 - A **BIND9 slave DNS server**
 
-It uses environment variables (.env) to safely store configuration details like your IP addresses and domain name.
+It uses environment variables (`.env`) to safely store configuration details like your IP addresses and domain name.
 
 ## ⚙️ Setup
 
@@ -13,7 +13,7 @@ It uses environment variables (.env) to safely store configuration details like 
 ```bash
 cp example.env .env
 ```
-2. Edit .env and fill in your real values:
+2. Edit `.env` and fill in your real values:
 ```bash
 DOMAIN=yourdomain.com
 IP1=1.2.3.4
@@ -31,8 +31,22 @@ ANSIBLE_USER=ubuntu
 4. Ensure your servers are accessible via SSH and your user has sudo privileges.
 5. Run the playbook:
 ```bash
-./run.sh stage_id
+./run.sh [yourdomain.com] stage_id
 ```
+🧩 Optional domain override
+
+By default, the script reads the domain from `.env`.
+You can override it by passing the domain name directly as the first argument — this is useful when testing or deploying multiple domains with the same infrastructure.
+
+Examples:
+```bash
+# Use domain from .env
+./run.sh stage2
+
+# Override domain manually
+./run.sh yourdomain.com stage3
+```
+In the second example, `yourdomain.com` temporarily overrides the `DOMAIN` value in `.env` for that run only.
 6. Verify DNS setup (DNS propagation usually takes between 15–60 minutes):
 ```bash
 $ dig NS yourdomain.com
@@ -54,7 +68,7 @@ mail.yourdomain.com.	3456	IN	A	IP1
 
 The setup process is divided into **two stages**, allowing you to deploy your infrastructure step-by-step:
 
-### Stage 1 — Initial Setup (SPF disabled)
+### Stage 1 — Initial Setup (Baseline)
 Run:
 ```bash
 ./run.sh stage1
@@ -68,7 +82,7 @@ Use this stage while testing connectivity or before your mail server is ready to
 
 ---
 
-### Stage 2 — Production Setup (SPF enabled)
+### Stage 2 — SPF Enforcement
 Run:
 ```bash
 ./run.sh stage2
@@ -82,7 +96,7 @@ Use this stage once your mail server is properly configured and ready for real e
 
 ---
 
-### Stage 3 — Secure Mail with DKIM (and SPF)
+### Stage 3 — DKIM
 Run:
 ```bash
 ./run.sh stage3
@@ -91,10 +105,10 @@ This stage:
 - Keeps everything from Stage 2 (DNS + Mail + SPF)
 - Enables DKIM signing on the mail server
   - Installs and configures OpenDKIM
-  - Generates a unique RSA key pair for your domain (default.private and default.txt)
+  - Generates a unique RSA key pair for your domain (`default.private` and `default.txt`)
   - Integrates OpenDKIM with Postfix so all outgoing mail is cryptographically signed
 - Publishes the DKIM public key automatically to your DNS master zone
-  - The key appears in your zone as a TXT record at default.\_domainkey.yourdomain.com
+  - The key appears in your zone as a TXT record at `default.\_domainkey.yourdomain.com`
   - The zone serial number updates automatically on each run
 - Restarts both opendkim and postfix to apply the changes
 
