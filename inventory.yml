@@ -6,6 +6,7 @@ all:
     IP3: "{{ lookup('env', 'IP3') }}"
     ANSIBLE_USER: "{{ lookup('env', 'ANSIBLE_USER') }}"
     ENABLE_SPF: "{{ lookup('env', 'ENABLE_SPF') | default('false') | bool }}"
+    ENABLE_DKIM: "{{ lookup('env', 'ENABLE_DKIM') | default('false') | bool }}"
 
   children:
     mail:
@@ -14,6 +15,7 @@ all:
           ansible_user: "{{ ANSIBLE_USER }}"
           hostname: "mail.{{ DOMAIN }}"
           domain: "{{ DOMAIN }}"
+          enable_dkim: "{{ ENABLE_DKIM }}"
 
     dns_master:
       hosts:
@@ -24,6 +26,7 @@ all:
           slave_ip: "{{ IP3 }}"
           mail_ip: "{{ IP1 }}"
           enable_spf: "{{ ENABLE_SPF }}"
+          enable_dkim: "{{ ENABLE_DKIM }}"
 
     dns_slave:
       hosts:

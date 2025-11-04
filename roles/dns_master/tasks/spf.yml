@@ -1,0 +1,15 @@
+---
+- name: Add SPF TXT record to zone file
+  blockinfile:
+    path: "/etc/bind/zones/db.{{ domain }}"
+    marker: "; {mark} ANSIBLE MANAGED BLOCK: SPF"
+    block: |
+      @   IN  TXT  "v=spf1 a mx ip4:{{ mail_ip }} ~all"
+  when: enable_spf | bool
+
+- name: Restart Bind9 after adding SPF record
+  service:
+    name: bind9
+    state: restarted
+  when: enable_spf | bool
+

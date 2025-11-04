@@ -1,3 +1,4 @@
+---
 - name: Set hostname
   ansible.builtin.hostname:
     name: "{{ hostname }}"
@@ -48,6 +49,14 @@
           listen-on { any; };
           dnssec-validation auto;
       };
+
+- name: Include SPF DNS record setup if enabled
+  include_tasks: spf.yml
+  when: enable_spf | bool
+
+- name: Include DKIM DNS record setup if enabled
+  include_tasks: dkim.yml
+  when: enable_dkim | bool
 
 - name: Restart bind9
   service:

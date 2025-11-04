@@ -1,0 +1,72 @@
+---
+- name: Install OpenDKIM
+  apt:
+    name:
+      - opendkim
+      - opendkim-tools
+    state: present
+    update_cache: yes
+
+- name: Create OpenDKIM directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: opendkim
+    group: opendkim
+    mode: '0750'
+  loop:
+    - /etc/opendkim
+    - /etc/opendkim/keys
+    - /etc/opendkim/keys/{{ domain }}   # 👈 add this line
+
+- name: Generate DKIM key for {{ domain }}
+  command: >
+    opendkim-genkey -D /etc/opendkim/keys/{{ domain }} -d {{ domain }} -s default
+  args:
+    creates: "/etc/opendkim/keys/{{ domain }}/default.private"
+
+- name: Set ownership on DKIM keys
+  file:
+    path: /etc/opendkim/keys/{{ domain }}
+    owner: opendkim
+    group: opendkim
+    mode: '0750'
+    recurse: yes
+
+- name: Configure OpenDKIM main configuration (Debian compatible)
+  copy:
+    dest: /etc/opendkim.conf
+    content: |
+      Syslog                  yes
+      UMask                   002
+      OversignHeaders         From
+      Canonicalization        relaxed/simple
+      Mode                    sv
+      SubDomains              no
+      Socket                  inet:8891@localhost
+      PidFile                 /var/run/opendkim/opendkim.pid
+      UserID                  opendkim:opendkim
+      Domain                  {{ domain }}
+      KeyFile                 /etc/opendkim/keys/{{ domain }}/default.private
+      Selector                default
+      SignatureAlgorithm      rsa-sha256
+
+- name: Integrate OpenDKIM with Postfix
+  lineinfile:
+    path: /etc/postfix/main.cf
+    regexp: '^{{ item.key }}'
+    line: "{{ item.key }} = {{ item.value }}"
+  loop:
+    - { key: 'milter_default_action', value: 'accept' }
+    - { key: 'milter_protocol', value: '2' }
+    - { key: 'smtpd_milters', value: 'inet:localhost:8891' }
+    - { key: 'non_smtpd_milters', value: 'inet:localhost:8891' }
+
+- name: Restart OpenDKIM and Postfix
+  service:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - opendkim
+    - postfix
+

@@ -1,21 +1,16 @@
-$TTL 3600
-@   IN  SOA  {{ hostname }}. admin.{{ domain }}. (
-        {{ ansible_date_time.epoch }} ; Serial
-        3600       ; Refresh
-        1800       ; Retry
-        1209600    ; Expire
-        3600 )     ; Minimum TTL
-
-@       IN  NS      ns1.{{ domain }}.
-@       IN  NS      ns2.{{ domain }}.
-
-ns1     IN  A       {{ IP2 }}
-ns2     IN  A       {{ IP3 }}
-
-mail    IN  A       {{ IP1 }}
-@       IN  MX 10   mail.{{ domain }}.
-
-{% if enable_spf %}
-@       IN  TXT     "v=spf1 ip4:{{ mail_ip | default(IP1) }} -all"
-{% endif %}
+$TTL    86400
+@       IN      SOA     ns1.{{ domain }}. admin.{{ domain }}. (
+{{ '%m%d%H%M' | strftime(ansible_date_time.epoch | int) }}   ; Serial
+                              3600      ; Refresh
+                              1800      ; Retry
+                              604800    ; Expire
+                              86400 )   ; Negative Cache TTL
+;
+@       IN      NS      ns1.{{ domain }}.
+@       IN      NS      ns2.{{ domain }}.
+@       IN      A       {{ mail_ip }}
+mail    IN      A       {{ mail_ip }}
+ns1     IN      A       {{ master_ip | default(mail_ip) }}
+ns2     IN      A       {{ slave_ip }}
+@       IN      MX 10   mail.{{ domain }}.
 

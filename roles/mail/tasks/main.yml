@@ -31,6 +31,10 @@
       smtp_tls_security_level = may
       smtp_tls_loglevel = 1
 
+- name: Include DKIM setup if enabled
+  include_tasks: dkim.yml
+  when: enable_dkim | bool
+
 - name: Restart Postfix
   service:
     name: postfix

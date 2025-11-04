@@ -88,8 +88,8 @@ To ensure your outgoing emails are accepted by major providers (like Gmail, Outl
 
 Example:
 ```bash
-IP1 →  mail.yourdomain.com
-mail.yourdomain.com →  IP1
+IP1 → mail.yourdomain.com
+mail.yourdomain.com → IP1
 ```
 
 ---
