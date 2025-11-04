@@ -47,6 +47,7 @@ Examples:
 ./run.sh yourdomain.com stage3
 ```
 In the second example, `yourdomain.com` temporarily overrides the `DOMAIN` value in `.env` for that run only.
+
 6. Verify DNS setup (DNS propagation usually takes between 15–60 minutes):
 ```bash
 $ dig NS yourdomain.com
