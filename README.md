@@ -33,7 +33,7 @@ ANSIBLE_USER=ubuntu
 ```bash
 ./run.sh
 ```
-6. Verify DNS setup:
+6. Verify DNS setup (DNS propagation usually takes between 15–60 minutes):
 ```bash
 dig NS yourdomain.com
 dig ns1.yourdomain.com
