@@ -44,10 +44,10 @@
       @       IN  NS      ns1.{{ domain }}.
       @       IN  NS      ns2.{{ domain }}.
 
-      ns1    IN  A       {{ hostvars[inventory_hostname]['ansible_host'] }}
-      ns2    IN  A       {{ slave_ip }}
+      ns1    IN  A       {{ IP2 }}
+      ns2    IN  A       {{ IP3 }}
 
-      mail    IN  A       {{ hostvars['IP1']['ansible_host'] | default('IP1') }}
+      mail    IN  A       {{ IP1 }}
       @       IN  MX 10   mail.{{ domain }}.
 
 - name: Configure named.conf.options
