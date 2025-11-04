@@ -29,26 +29,13 @@
           also-notify { {{ slave_ip }}; };
       };
 
-- name: Create zone file
-  copy:
+- name: Create zone file for {{ domain }}
+  template:
+    src: db.domain.j2
     dest: /etc/bind/zones/db.{{ domain }}
-    content: |
-      $TTL 3600
-      @   IN  SOA {{ hostname }}. admin.{{ domain }}. (
-              {{ ansible_date_time.epoch }} ; Serial
-              3600       ; Refresh
-              1800       ; Retry
-              1209600    ; Expire
-              3600 )     ; Minimum TTL
-
-      @       IN  NS      ns1.{{ domain }}.
-      @       IN  NS      ns2.{{ domain }}.
-
-      ns1    IN  A       {{ IP2 }}
-      ns2    IN  A       {{ IP3 }}
-
-      mail    IN  A       {{ IP1 }}
-      @       IN  MX 10   mail.{{ domain }}.
+    owner: root
+    group: bind
+    mode: 0644
 
 - name: Configure named.conf.options
   copy:

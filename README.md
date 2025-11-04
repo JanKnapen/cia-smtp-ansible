@@ -31,7 +31,7 @@ ANSIBLE_USER=ubuntu
 4. Ensure your servers are accessible via SSH and your user has sudo privileges.
 5. Run the playbook:
 ```bash
-./run.sh
+./run.sh stage_id
 ```
 6. Verify DNS setup (DNS propagation usually takes between 15–60 minutes):
 ```bash
@@ -49,3 +49,51 @@ $ dig mail.yourdomain.com
 ;; ANSWER SECTION:
 mail.yourdomain.com.	3456	IN	A	IP1
 ```
+
+## 🧱 Stages
+
+The setup process is divided into **two stages**, allowing you to deploy your infrastructure step-by-step:
+
+### Stage 1 — Initial Setup (SPF disabled)
+Run:
+```bash
+./run.sh stage1
+```
+This stage:
+- Deploys all three servers (DNS master, DNS slave, and mail gateway)
+- Configures DNS zones, mail routing, and hostnames
+- Disables SPF (no TXT record is added to the DNS zone)
+
+Use this stage while testing connectivity or before your mail server is ready to send authenticated emails.
+
+---
+
+### Stage 2 — Production Setup (SPF enabled)
+Run:
+```bash
+./run.sh stage2
+```
+This stage:
+- Re-runs the same Ansible playbooks
+- Enables SPF by adding the TXT record `v=spf1 ip4:IP1 -all to your DNS zone`
+- Ensures Gmail and other mail providers can authenticate your domain
+
+Use this stage once your mail server is properly configured and ready for real email delivery.
+
+---
+
+⚠️  Important: PTR (Reverse DNS) Record Required
+
+To ensure your outgoing emails are accepted by major providers (like Gmail, Outlook, and Yahoo), your mail server’s IP must have a valid reverse DNS (PTR) record that matches its hostname.
+
+Example:
+```bash
+IP1 →  mail.yourdomain.com
+mail.yourdomain.com →  IP1
+```
+
+---
+
+💡 Tip:
+
+You can re-run either stage at any time. The playbooks are idempotent — they only apply changes when configuration differs.

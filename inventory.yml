@@ -5,6 +5,7 @@ all:
     IP2: "{{ lookup('env', 'IP2') }}"
     IP3: "{{ lookup('env', 'IP3') }}"
     ANSIBLE_USER: "{{ lookup('env', 'ANSIBLE_USER') }}"
+    ENABLE_SPF: "{{ lookup('env', 'ENABLE_SPF') | default('false') | bool }}"
 
   children:
     mail:
@@ -21,6 +22,8 @@ all:
           hostname: "ns1.{{ DOMAIN }}"
           domain: "{{ DOMAIN }}"
           slave_ip: "{{ IP3 }}"
+          mail_ip: "{{ IP1 }}"
+          enable_spf: "{{ ENABLE_SPF }}"
 
     dns_slave:
       hosts:
