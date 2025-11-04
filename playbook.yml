@@ -1,0 +1,25 @@
+- hosts: all
+  become: yes
+  tasks:
+    - name: Remove previous Ansible installation
+      apt:
+        name: ansible
+        state: absent
+        purge: yes
+      ignore_errors: yes
+
+- hosts: mail
+  become: yes
+  roles:
+    - mail
+
+- hosts: dns_master
+  become: yes
+  roles:
+    - dns_master
+
+- hosts: dns_slave
+  become: yes
+  roles:
+    - dns_slave
+

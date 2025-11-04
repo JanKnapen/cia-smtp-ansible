@@ -1,0 +1,40 @@
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Install Bind9 packages
+  apt:
+    name:
+      - bind9
+      - bind9utils
+      - bind9-doc
+    state: present
+    update_cache: yes
+
+- name: Configure named.conf.local for slave zone
+  copy:
+    dest: /etc/bind/named.conf.local
+    content: |
+      zone "{{ domain }}" {
+          type slave;
+          file "/var/cache/bind/db.{{ domain }}";
+          masters { {{ master_ip }}; };
+      };
+
+- name: Configure named.conf.options
+  copy:
+    dest: /etc/bind/named.conf.options
+    content: |
+      options {
+          directory "/var/cache/bind";
+          recursion no;
+          allow-query { any; };
+          listen-on { any; };
+          dnssec-validation auto;
+      };
+
+- name: Restart bind9
+  service:
+    name: bind9
+    state: restarted
+

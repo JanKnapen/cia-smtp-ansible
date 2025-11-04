@@ -1,0 +1,70 @@
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Install Bind9 packages
+  apt:
+    name:
+      - bind9
+      - bind9utils
+      - bind9-doc
+    state: present
+    update_cache: yes
+
+- name: Create zone directory
+  file:
+    path: /etc/bind/zones
+    state: directory
+    mode: '0755'
+
+- name: Configure named.conf.local
+  copy:
+    dest: /etc/bind/named.conf.local
+    content: |
+      zone "{{ domain }}" {
+          type master;
+          file "/etc/bind/zones/db.{{ domain }}";
+          allow-update { none; };
+          allow-transfer { {{ slave_ip }}; };
+          also-notify { {{ slave_ip }}; };
+      };
+
+- name: Create zone file
+  copy:
+    dest: /etc/bind/zones/db.{{ domain }}
+    content: |
+      $TTL 3600
+      @   IN  SOA {{ hostname }}. admin.{{ domain }}. (
+              {{ ansible_date_time.epoch }} ; Serial
+              3600       ; Refresh
+              1800       ; Retry
+              1209600    ; Expire
+              3600 )     ; Minimum TTL
+
+      @       IN  NS      dns1.{{ domain }}.
+      @       IN  NS      dns2.{{ domain }}.
+
+      dns1    IN  A       {{ hostvars[inventory_hostname]['ansible_host'] }}
+      dns2    IN  A       {{ slave_ip }}
+
+      mail    IN  A       {{ hostvars['IP1']['ansible_host'] | default('IP1') }}
+      @       IN  MX 10   mail.{{ domain }}.
+      @       IN  TXT     "v=spf1 ip4:{{ hostvars['IP1']['ansible_host'] | default('IP1') }} -all"
+
+- name: Configure named.conf.options
+  copy:
+    dest: /etc/bind/named.conf.options
+    content: |
+      options {
+          directory "/var/cache/bind";
+          recursion no;
+          allow-query { any; };
+          listen-on { any; };
+          dnssec-validation auto;
+      };
+
+- name: Restart bind9
+  service:
+    name: bind9
+    state: restarted
+

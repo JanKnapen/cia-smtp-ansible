@@ -1,0 +1,32 @@
+all:
+  vars:
+    DOMAIN: "{{ lookup('env', 'DOMAIN') }}"
+    IP1: "{{ lookup('env', 'IP1') }}"
+    IP2: "{{ lookup('env', 'IP2') }}"
+    IP3: "{{ lookup('env', 'IP3') }}"
+    ANSIBLE_USER: "{{ lookup('env', 'ANSIBLE_USER') }}"
+
+  children:
+    mail:
+      hosts:
+        "{{ IP1 }}":
+          ansible_user: "{{ ANSIBLE_USER }}"
+          hostname: "mail.{{ DOMAIN }}"
+          domain: "{{ DOMAIN }}"
+
+    dns_master:
+      hosts:
+        "{{ IP2 }}":
+          ansible_user: "{{ ANSIBLE_USER }}"
+          hostname: "dns1.{{ DOMAIN }}"
+          domain: "{{ DOMAIN }}"
+          slave_ip: "{{ IP3 }}"
+
+    dns_slave:
+      hosts:
+        "{{ IP3 }}":
+          ansible_user: "{{ ANSIBLE_USER }}"
+          hostname: "dns2.{{ DOMAIN }}"
+          domain: "{{ DOMAIN }}"
+          master_ip: "{{ IP2 }}"
+

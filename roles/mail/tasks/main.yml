@@ -1,0 +1,38 @@
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Set mailname
+  ansible.builtin.copy:
+    dest: /etc/mailname
+    content: "{{ domain }}\n"
+
+- name: Install Postfix and mailutils
+  apt:
+    name:
+      - postfix
+      - mailutils
+    state: present
+    update_cache: yes
+
+- name: Configure Postfix main.cf
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/main.cf
+    block: |
+      myhostname = {{ hostname }}
+      mydomain = {{ domain }}
+      myorigin = $mydomain
+      inet_interfaces = all
+      inet_protocols = ipv4
+      mydestination =
+      relayhost =
+      mynetworks = 127.0.0.0/8
+      smtpd_banner = $myhostname ESMTP
+      smtp_tls_security_level = may
+      smtp_tls_loglevel = 1
+
+- name: Restart Postfix
+  service:
+    name: postfix
+    state: restarted
+
