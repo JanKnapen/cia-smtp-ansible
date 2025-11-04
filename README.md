@@ -82,6 +82,31 @@ Use this stage once your mail server is properly configured and ready for real e
 
 ---
 
+### Stage 3 — Secure Mail with DKIM (and SPF)
+Run:
+```bash
+./run.sh stage3
+```
+This stage:
+- Keeps everything from Stage 2 (DNS + Mail + SPF)
+- Enables DKIM signing on the mail server
+  - Installs and configures OpenDKIM
+  - Generates a unique RSA key pair for your domain (default.private and default.txt)
+  - Integrates OpenDKIM with Postfix so all outgoing mail is cryptographically signed
+- Publishes the DKIM public key automatically to your DNS master zone
+  - The key appears in your zone as a TXT record at default.\_domainkey.yourdomain.com
+  - The zone serial number updates automatically on each run
+- Restarts both opendkim and postfix to apply the changes
+
+Once deployed, your outgoing mail will include a DKIM-Signature header that Gmail, Outlook, and others can verify.
+
+✅ You can test it by sending a message to your Gmail account and viewing Show original, where it should say:
+```bash
+DKIM: PASS (signature verified)
+```
+
+---
+
 ⚠️  Important: PTR (Reverse DNS) Record Required
 
 To ensure your outgoing emails are accepted by major providers (like Gmail, Outlook, and Yahoo), your mail server’s IP must have a valid reverse DNS (PTR) record that matches its hostname.

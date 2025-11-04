@@ -17,7 +17,7 @@
   loop:
     - /etc/opendkim
     - /etc/opendkim/keys
-    - /etc/opendkim/keys/{{ domain }}   # 👈 add this line
+    - /etc/opendkim/keys/{{ domain }}
 
 - name: Generate DKIM key for {{ domain }}
   command: >
