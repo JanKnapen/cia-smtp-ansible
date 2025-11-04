@@ -41,15 +41,14 @@
               1209600    ; Expire
               3600 )     ; Minimum TTL
 
-      @       IN  NS      dns1.{{ domain }}.
-      @       IN  NS      dns2.{{ domain }}.
+      @       IN  NS      ns1.{{ domain }}.
+      @       IN  NS      ns2.{{ domain }}.
 
       dns1    IN  A       {{ hostvars[inventory_hostname]['ansible_host'] }}
       dns2    IN  A       {{ slave_ip }}
 
       mail    IN  A       {{ hostvars['IP1']['ansible_host'] | default('IP1') }}
       @       IN  MX 10   mail.{{ domain }}.
-      @       IN  TXT     "v=spf1 ip4:{{ hostvars['IP1']['ansible_host'] | default('IP1') }} -all"
 
 - name: Configure named.conf.options
   copy:

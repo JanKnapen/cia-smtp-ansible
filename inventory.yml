@@ -18,7 +18,7 @@ all:
       hosts:
         "{{ IP2 }}":
           ansible_user: "{{ ANSIBLE_USER }}"
-          hostname: "dns1.{{ DOMAIN }}"
+          hostname: "ns1.{{ DOMAIN }}"
           domain: "{{ DOMAIN }}"
           slave_ip: "{{ IP3 }}"
 
@@ -26,7 +26,7 @@ all:
       hosts:
         "{{ IP3 }}":
           ansible_user: "{{ ANSIBLE_USER }}"
-          hostname: "dns2.{{ DOMAIN }}"
+          hostname: "ns2.{{ DOMAIN }}"
           domain: "{{ DOMAIN }}"
           master_ip: "{{ IP2 }}"
 
