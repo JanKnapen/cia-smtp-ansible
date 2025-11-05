@@ -67,7 +67,7 @@ mail.yourdomain.com.	3456	IN	A	IP1
 
 ## 🧱 Stages
 
-The setup process is divided into **two stages**, allowing you to deploy your infrastructure step-by-step:
+The setup process is divided into **several stages**, allowing you to deploy your infrastructure step-by-step:
 
 ### Stage 1 — Initial Setup (Baseline)
 Run:
@@ -77,7 +77,6 @@ Run:
 This stage:
 - Deploys all three servers (DNS master, DNS slave, and mail gateway)
 - Configures DNS zones, mail routing, and hostnames
-- Disables SPF (no TXT record is added to the DNS zone)
 
 Use this stage while testing connectivity or before your mail server is ready to send authenticated emails.
 
@@ -136,4 +135,4 @@ mail.yourdomain.com → IP1
 
 💡 Tip:
 
-You can re-run either stage at any time. The playbooks are idempotent — they only apply changes when configuration differs.
+You can re-run each stage at any time. The playbooks are idempotent — they only apply changes when configuration differs.
