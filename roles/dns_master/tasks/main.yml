@@ -58,6 +58,10 @@
   include_tasks: dkim.yml
   when: enable_dkim | bool
 
+- name: Include DMARC DNS record setup if enabled
+  include_tasks: dmarc.yml
+  when: enable_dmarc | bool
+
 - name: Restart bind9
   service:
     name: bind9

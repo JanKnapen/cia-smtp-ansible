@@ -42,18 +42,26 @@ case "$STAGE" in
   stage1)
     export ENABLE_SPF=false
     export ENABLE_DKIM=false
+    export ENABLE_DMARC=false
     ;;
   stage2)
     export ENABLE_SPF=true
     export ENABLE_DKIM=false
+    export ENABLE_DMARC=false
     ;;
   stage3)
     export ENABLE_SPF=true
     export ENABLE_DKIM=true
+    export ENABLE_DMARC=false
+    ;;
+  stage4)
+    export ENABLE_SPF=true
+    export ENABLE_DKIM=true
+    export ENABLE_DMARC=true
     ;;
   *)
     echo "❌ Unknown stage: $STAGE"
-    echo "Usage: $0 [domain] {stage1|stage2|stage3}"
+    echo "Usage: $0 [domain] {stage1|stage2|stage3|stage4}"
     exit 1
     ;;
 esac

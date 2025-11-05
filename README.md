@@ -121,6 +121,33 @@ DKIM: PASS (signature verified)
 
 ---
 
+## Stage 4 — DMARC Enforcement
+Run:
+```bash
+./run.sh stage4
+```
+This stage:
+- Keeps everything from Stage 3 (DNS + Mail + SPF + DKIM)
+- Adds a DMARC record to your DNS zone for full email authentication enforcement
+- Configures a TXT record under `_dmarc.yourdomain.com` with policy `p=quarantine` and reporting addresses
+- Reloads BIND on the master DNS server and forces a retransfer to the slave, ensuring both servers publish the new record
+
+After this stage, receivers such as Gmail and Outlook can enforce your DMARC policy.
+Messages that fail SPF and DKIM alignment will be quarantined, and DMARC aggregate and forensic reports will be sent to your specified reporting mailboxes (dmarc-report@yourdomain.com).
+
+✅ Verification
+
+After running Stage 4, confirm that the record is visible publicly:
+```bash
+dig TXT _dmarc.yourdomain.com +short
+```
+
+You should see the DMARC policy string.
+
+To check that mail authentication passes end-to-end, send a message to a Gmail account and click Show original — it should include `DMARC: PASS`.
+
+---
+
 ⚠️  Important: PTR (Reverse DNS) Record Required
 
 To ensure your outgoing emails are accepted by major providers (like Gmail, Outlook, and Yahoo), your mail server’s IP must have a valid reverse DNS (PTR) record that matches its hostname.

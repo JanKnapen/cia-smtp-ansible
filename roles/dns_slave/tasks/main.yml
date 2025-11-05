@@ -38,3 +38,13 @@
     name: bind9
     state: restarted
 
+- name: Force zone retransfer from master
+  command: "rndc retransfer {{ domain }}"
+  register: retransfer_result
+  changed_when: "'transfer started' in retransfer_result.stderr or 'Transfer started' in retransfer_result.stdout"
+  failed_when: false
+
+- name: Show retransfer result
+  debug:
+    var: retransfer_result.stdout
+
