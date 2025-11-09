@@ -1,0 +1,15 @@
+---
+- name: Write DMARC TXT record into DNS zone file
+  blockinfile:
+    path: "/etc/bind/zones/db.{{ domain }}"
+    marker: "; {mark} ANSIBLE MANAGED BLOCK: DMARC"
+    block: |
+      _dmarc IN TXT "v=DMARC1; p=quarantine; rua=mailto:dmarc-reports@{{ domain }}; ruf=mailto:dmarc-forensics@{{ domain }}; fo=1; pct=100"
+  when: enable_dmarc | bool
+
+- name: Restart Bind9 after adding DMARC record
+  service:
+    name: bind9
+    state: restarted
+  when: enable_dmarc | bool
+
