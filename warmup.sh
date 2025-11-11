@@ -17,7 +17,7 @@
 # --- 1. Argument Validation ---
 if [ "$#" -ne 3 ]; then
     echo "Usage: $0 <server_address> <to_email> <from_email>"
-    echo "Example: $0 mail.cia-smtp-auth.nl test@example.com sender@my-domain.com"
+    echo "Example: $0 cia-smtp-auth.nl test@example.com sender@my-domain.com"
     exit 1
 fi
 
@@ -246,6 +246,7 @@ echo "---------------------"
 swaks --server "$SERVER" \
       --to "$TO_EMAIL" \
       --from "$FROM_EMAIL" \
+      --server 127.0.0.1 \
       --header "Subject: $SUBJECT" \
       --body "$BODY"
 
