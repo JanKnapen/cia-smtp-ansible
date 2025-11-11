@@ -243,7 +243,7 @@ echo "---------------------"
 # 4. Execute the swaks command
 # Note: Ensure you update this to the *absolute path*
 # (e.g., /usr/bin/swaks) when running with cron.
-swaks --server "$SERVER" \
+/usr/bin/swaks --server "$SERVER" \
       --to "$TO_EMAIL" \
       --from "$FROM_EMAIL" \
       --server 127.0.0.1 \

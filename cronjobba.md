@@ -70,14 +70,35 @@ Add Cron Job: Go to the bottom of the file and add one of the following lines.
 **Option A (Every 30 Mins):**
 
 ```
-*/30 * * * * /home/jan/warmup.sh mail.cia-smtp-auth.nl jron21647@gmail.com jan@cia-smtp-auth.nl >> /home/jan/logs/warmup.log 2>&1
+*/30 * * * * /home/jan/warmup.sh cia-smtp-auth.nl jron21647@gmail.com jan@cia-smtp-auth.nl >> /home/jan/logs/warmup.log 2>&1
 ```
 
 **Option B (Recommended - Random, Hourly):** This runs once per hour, at a random time within the first 15 minutes, which looks more "natural."
 
 ```
-0 * * * * sleep $((RANDOM % 900)); /home/jan/warmup.sh mail.cia-smtp-auth.nl jron21647@gmail.com jan@cia-smtp-auth.nl >> /home/jan/logs/warmup.log 2>&1
+0 * * * * sleep $((RANDOM % 900)); /home/jan/warmup.sh cia-smtp-auth.nl jron21647@gmail.com jan@cia-smtp-auth.nl >> /home/jan/logs/warmup.log 2>&1
 ```
+
+
+To create a cron job that triggers every hour on weekdays (Monday to Friday) between 8 AM and 5 PM, you can add the following line to your /etc/crontab file:
+```
+0 8-17 * * 1-5 /home/jan/warmup.sh cia-smtp-auth.nl jron21647@gmail.com jan@cia-smtp-auth.nl >> /home/jan/logs/warmup.log 2>&1
+```
+
+Explanation:
+
+0: The minute at which the job will run (0th minute).
+
+8-17: The hour range (from 8 AM to 5 PM).
+
+*: The day of the month (wildcard, so it runs every day of the month).
+
+*: The month (wildcard, so it runs every month).
+
+1-5: The weekdays (1 = Monday, 5 = Friday, so it runs only on weekdays).
+
+
+
 
 _Note: Replace `/home/jan/` with the full, absolute path to your `warmup.sh` script._
 
