@@ -1,16 +1,17 @@
 #!/bin/bash
 
 # ---
-# Domain Warmup Script
+# Domain Warmup Script (v2)
 #
-# This script sends a randomly selected and populated email template
-# to a target server using 'swaks'.
+# This script has a 50/50 chance to send an email.
+# If it decides to send, it waits 4-26 minutes before sending
+# a randomly selected and populated email template.
 #
 # Usage:
-# ./warmup.sh <server_address> <to_email> <from_email>
+# ./warmup-v2.sh <server_address> <to_email> <from_email>
 #
 # Example:
-# ./warmup.sh mail.cia-smtp-auth.nl test-recipient@gmail.com jan@cia-smtp-auth.nl
+# ./warmup-v2.sh mail.cia-smtp-auth.nl test-recipient@gmail.com jan@cia-smtp-auth.nl
 # ---
 
 # --- 1. Argument Validation ---
@@ -190,9 +191,33 @@ Thanks,
 Jan"
 }
 
-# --- 5. Main Execution ---
+# --- 5. Main Execution (Updated Logic) ---
 
-# Pick a random template number from 1 to 5
+# 1. 50/50 Chance to Send
+# We check if a random number (0 or 1) is equal to 0.
+if [ $((RANDOM % 2)) -eq 0 ]; then
+    echo "--- 50/50 chance: SKIPPING send. ---"
+    exit 0
+fi
+
+echo "--- 50/50 chance: PASSED. Will send email. ---"
+
+# 2. Random Delay (4 to 26 minutes)
+MIN_DELAY_SEC=$((4 * 60))   # 240 seconds
+MAX_DELAY_SEC=$((26 * 60))  # 1560 seconds
+# Calculate the range of seconds (1560 - 240 + 1)
+RANGE_SEC=$((MAX_DELAY_SEC - MIN_DELAY_SEC + 1))
+# Get a random number within the range and add the minimum
+DELAY_SEC=$((RANDOM % RANGE_SEC + MIN_DELAY_SEC))
+DELAY_MIN=$((DELAY_SEC / 60))
+
+echo "--- Waiting for ${DELAY_SEC}s (approx. ${DELAY_MIN} min) before sending... ---"
+# Sleep for the calculated duration
+sleep $DELAY_SEC
+
+echo "--- Wait complete. Proceeding to send. ---"
+
+# 3. Pick a random template number from 1 to 5
 TEMPLATE_NUM=$((RANDOM % 5 + 1))
 
 # Call the chosen template function
@@ -215,7 +240,9 @@ echo "---------------------"
 echo "$BODY"
 echo "---------------------"
 
-# Execute the swaks command
+# 4. Execute the swaks command
+# Note: Ensure you update this to the *absolute path*
+# (e.g., /usr/bin/swaks) when running with cron.
 swaks --server "$SERVER" \
       --to "$TO_EMAIL" \
       --from "$FROM_EMAIL" \
