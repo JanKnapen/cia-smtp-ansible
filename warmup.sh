@@ -79,7 +79,7 @@ Does that align with your understanding? Let me know if I missed anything.
 
 Best,
 
-[Your Name]"
+Jan"
 }
 
 template_2() {
@@ -103,7 +103,7 @@ point me to the right person to get it from?
 
 Thanks,
 
-[Your Name]"
+Jan"
 }
 
 template_3() {
@@ -134,7 +134,7 @@ the implementation plan.
 
 Best,
 
-[Your Name]"
+Jan"
 }
 
 template_4() {
@@ -159,7 +159,7 @@ Let me know what time works for you.
 
 Best regards,
 
-[Your Name]"
+Jan"
 }
 
 template_5() {
@@ -187,7 +187,7 @@ on the calendar.
 
 Thanks,
 
-[Your Name]"
+Jan"
 }
 
 # --- 5. Main Execution ---
