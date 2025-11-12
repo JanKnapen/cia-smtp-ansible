@@ -203,8 +203,8 @@ fi
 echo "--- 50/50 chance: PASSED. Will send email. ---"
 
 # 2. Random Delay (4 to 26 minutes)
-MIN_DELAY_SEC=$((4 * 60))   # 240 seconds
-MAX_DELAY_SEC=$((26 * 60))  # 1560 seconds
+MIN_DELAY_SEC=$((2 * 60))   # 240 seconds
+MAX_DELAY_SEC=$((8 * 60))  # 1560 seconds
 # Calculate the range of seconds (1560 - 240 + 1)
 RANGE_SEC=$((MAX_DELAY_SEC - MIN_DELAY_SEC + 1))
 # Get a random number within the range and add the minimum
