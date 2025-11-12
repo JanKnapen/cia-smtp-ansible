@@ -24,6 +24,7 @@ all:
           ansible_user: "{{ ANSIBLE_USER }}"
           hostname: "ns1.{{ DOMAIN }}"
           domain: "{{ DOMAIN }}"
+          master_ip: "{{ IP2 }}"
           slave_ip: "{{ IP3 }}"
           mail_ip: "{{ IP1 }}"
           enable_spf: "{{ ENABLE_SPF }}"
