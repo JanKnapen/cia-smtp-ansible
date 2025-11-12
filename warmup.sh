@@ -193,19 +193,10 @@ Jan"
 
 # --- 5. Main Execution (Updated Logic) ---
 
-# 1. 50/50 Chance to Send
-# We check if a random number (0 or 1) is equal to 0.
-if [ $((RANDOM % 2)) -eq 0 ]; then
-    echo "--- 50/50 chance: SKIPPING send. ---"
-    exit 0
-fi
-
-echo "--- 50/50 chance: PASSED. Will send email. ---"
-
-# 2. Random Delay (4 to 26 minutes)
-MIN_DELAY_SEC=$((2 * 60))   # 240 seconds
-MAX_DELAY_SEC=$((8 * 60))  # 1560 seconds
-# Calculate the range of seconds (1560 - 240 + 1)
+# 1 Random Delay (2 to 8 minutes)
+MIN_DELAY_SEC=$((2 * 60))   # 120 seconds
+MAX_DELAY_SEC=$((8 * 60))  # 480 seconds
+# Calculate the range of seconds (480 - 120 + 1)
 RANGE_SEC=$((MAX_DELAY_SEC - MIN_DELAY_SEC + 1))
 # Get a random number within the range and add the minimum
 DELAY_SEC=$((RANDOM % RANGE_SEC + MIN_DELAY_SEC))
@@ -217,7 +208,7 @@ sleep $DELAY_SEC
 
 echo "--- Wait complete. Proceeding to send. ---"
 
-# 3. Pick a random template number from 1 to 5
+# 2. Pick a random template number from 1 to 5
 TEMPLATE_NUM=$((RANDOM % 5 + 1))
 
 # Call the chosen template function
@@ -240,7 +231,7 @@ echo "---------------------"
 echo "$BODY"
 echo "---------------------"
 
-# 4. Execute the swaks command
+# 3. Execute the swaks command
 # Note: Ensure you update this to the *absolute path*
 # (e.g., /usr/bin/swaks) when running with cron.
 /usr/bin/swaks --server "$SERVER" \
