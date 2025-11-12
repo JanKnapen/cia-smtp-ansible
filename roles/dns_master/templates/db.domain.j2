@@ -10,7 +10,7 @@ $TTL    86400
 @       IN      NS      ns2.{{ domain }}.
 @       IN      A       {{ mail_ip }}
 mail    IN      A       {{ mail_ip }}
-ns1     IN      A       {{ master_ip | default(mail_ip) }}
+ns1     IN      A       {{ master_ip }}
 ns2     IN      A       {{ slave_ip }}
 @       IN      MX 10   mail.{{ domain }}.
 
