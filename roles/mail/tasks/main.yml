@@ -40,3 +40,12 @@
     name: postfix
     state: restarted
 
+- name: Copy warmup script to the Ansible user's home
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/warmup.sh"
+    dest: "/home/{{ ANSIBLE_USER }}/warmup.sh"
+    owner: "{{ ANSIBLE_USER }}"
+    group: "{{ ANSIBLE_USER }}"
+    mode: '0755'
+    force: yes
+
