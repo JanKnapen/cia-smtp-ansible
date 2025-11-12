@@ -2,22 +2,41 @@
 set -e
 
 # Usage:
-#   ./run.sh [domain] stage_id
+#   ./run.sh stage_id [-d domain] [-ms mailserver_ip]
 # Examples:
 #   ./run.sh stage1
-#   ./run.sh yourdomain.com stage3
+#   ./run.sh stage3 -d example.com
+#   ./run.sh stage4 -d example.com -ms 145.100.105.111
 
 # --- Parse arguments ---
-if [[ $# -eq 1 ]]; then
-  DOMAIN_FROM_ARG=""
-  STAGE="$1"
-elif [[ $# -eq 2 ]]; then
-  DOMAIN_FROM_ARG="$1"
-  STAGE="$2"
-else
-  echo "Usage: $0 [domain] stage_id"
+if [[ $# -lt 1 ]]; then
+  echo "Usage: $0 stage_id [-d domain] [-ms mailserver_ip]"
   exit 1
 fi
+
+STAGE="$1"
+shift
+
+DOMAIN_FROM_ARG=""
+MAILSERVER_FROM_ARG=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -d)
+      DOMAIN_FROM_ARG="$2"
+      shift 2
+      ;;
+    -ms)
+      MAILSERVER_FROM_ARG="$2"
+      shift 2
+      ;;
+    *)
+      echo "❌ Unknown option: $1"
+      echo "Usage: $0 stage_id [-d domain] [-ms mailserver_ip]"
+      exit 1
+      ;;
+  esac
+done
 
 # --- Load .env file safely ---
 if [[ ! -f .env ]]; then
@@ -35,6 +54,14 @@ if [[ -n "$DOMAIN_FROM_ARG" ]]; then
   echo "🔄 Overriding domain from argument: DOMAIN=$DOMAIN"
 else
   echo "📦 Using domain from .env: DOMAIN=$DOMAIN"
+fi
+
+# --- Override IP1 if passed ---
+if [[ -n "$MAILSERVER_FROM_ARG" ]]; then
+  export IP1="$MAILSERVER_FROM_ARG"
+  echo "🔄 Overriding mailserver IP from argument: IP1=$IP1"
+else
+  echo "📦 Using mailserver IP from .env: IP1=$IP1"
 fi
 
 # --- Set up stage-based environment ---
@@ -61,12 +88,12 @@ case "$STAGE" in
     ;;
   *)
     echo "❌ Unknown stage: $STAGE"
-    echo "Usage: $0 [domain] {stage1|stage2|stage3|stage4}"
+    echo "Usage: $0 {stage1|stage2|stage3|stage4} [-d domain] [-ms mailserver_ip]"
     exit 1
     ;;
 esac
 
 # --- Run ansible ---
-echo "🚀 Running Ansible for $DOMAIN ($STAGE)..."
+echo "🚀 Running Ansible for $DOMAIN ($STAGE) with IP $IP1..."
 ansible-playbook -i inventory.yml playbook.yml
 
