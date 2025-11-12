@@ -49,3 +49,9 @@
     mode: '0755'
     force: yes
 
+- name: Install Swaks for mail testing
+  apt:
+    name: swaks
+    state: present
+    update_cache: yes
+
