@@ -193,52 +193,59 @@ Jan"
 
 # --- 5. Main Execution (Updated Logic) ---
 
-# 1 Random Delay (2 to 8 minutes)
-MIN_DELAY_SEC=$((2 * 60))   # 120 seconds
-MAX_DELAY_SEC=$((8 * 60))  # 480 seconds
-# Calculate the range of seconds (480 - 120 + 1)
-RANGE_SEC=$((MAX_DELAY_SEC - MIN_DELAY_SEC + 1))
-# Get a random number within the range and add the minimum
-DELAY_SEC=$((RANDOM % RANGE_SEC + MIN_DELAY_SEC))
-DELAY_MIN=$((DELAY_SEC / 60))
+send_random_email() {
+    # 1 Random Delay (1 to 3 minutes)
+    MIN_DELAY_SEC=$((1 * 60))   # 60 seconds
+    MAX_DELAY_SEC=$((3 * 60))  # 180 seconds
+    # Calculate the range of seconds (180 - 60 + 1)
+    RANGE_SEC=$((MAX_DELAY_SEC - MIN_DELAY_SEC + 1))
+    # Get a random number within the range and add the minimum
+    DELAY_SEC=$((RANDOM % RANGE_SEC + MIN_DELAY_SEC))
+    DELAY_MIN=$((DELAY_SEC / 60))
 
-echo "--- Waiting for ${DELAY_SEC}s (approx. ${DELAY_MIN} min) before sending... ---"
-# Sleep for the calculated duration
-sleep $DELAY_SEC
+    echo "--- Waiting for ${DELAY_SEC}s (approx. ${DELAY_MIN} min) before sending... ---"
+    # Sleep for the calculated duration
+    sleep $DELAY_SEC
 
-echo "--- Wait complete. Proceeding to send. ---"
+    echo "--- Wait complete. Proceeding to send. ---"
 
-# 2. Pick a random template number from 1 to 5
-TEMPLATE_NUM=$((RANDOM % 5 + 1))
+    # 2. Pick a random template number from 1 to 5
+    TEMPLATE_NUM=$((RANDOM % 5 + 1))
 
-# Call the chosen template function
-# The function's output (Subject and Body) is captured
-TEMPLATE_OUTPUT=$(template_${TEMPLATE_NUM})
+    # Call the chosen template function
+    # The function's output (Subject and Body) is captured
+    TEMPLATE_OUTPUT=$(template_${TEMPLATE_NUM})
 
-# Extract the Subject (the first line)
-SUBJECT=$(echo "$TEMPLATE_OUTPUT" | head -n 1)
+    # Extract the Subject (the first line)
+    SUBJECT=$(echo "$TEMPLATE_OUTPUT" | head -n 1)
 
-# Extract the Body (everything *but* the first line)
-BODY=$(echo "$TEMPLATE_OUTPUT" | tail -n +2)
+    # Extract the Body (everything *but* the first line)
+    BODY=$(echo "$TEMPLATE_OUTPUT" | tail -n +2)
 
-echo "--- Sending Email ---"
-echo "Server: $SERVER"
-echo "To: $TO_EMAIL"
-echo "From: $FROM_EMAIL"
-echo "Template: #$TEMPLATE_NUM"
-echo "Subject: $SUBJECT"
-echo "---------------------"
-echo "$BODY"
-echo "---------------------"
+    echo "--- Sending Email ---"
+    echo "Server: $SERVER"
+    echo "To: $TO_EMAIL"
+    echo "From: $FROM_EMAIL"
+    echo "Template: #$TEMPLATE_NUM"
+    echo "Subject: $SUBJECT"
+    echo "---------------------"
+    echo "$BODY"
+    echo "---------------------"
 
-# 3. Execute the swaks command
-# Note: Ensure you update this to the *absolute path*
-# (e.g., /usr/bin/swaks) when running with cron.
-/usr/bin/swaks --server "$SERVER" \
-      --to "$TO_EMAIL" \
-      --from "$FROM_EMAIL" \
-      --server 127.0.0.1 \
-      --header "Subject: $SUBJECT" \
-      --body "$BODY"
+    # 3. Execute the swaks command
+    # Note: Ensure you update this to the *absolute path*
+    # (e.g., /usr/bin/swaks) when running with cron.
+    /usr/bin/swaks --server "$SERVER" \
+          --to "$TO_EMAIL" \
+          --from "$FROM_EMAIL" \
+          --server 127.0.0.1 \
+          --header "Subject: $SUBJECT" \
+          --body "$BODY"
 
-echo "--- Done ---"
+    echo "--- Done ---"
+}
+
+for i in {1..5}; do
+    echo "=== Email run $i/5 ==="
+    send_random_email
+done
