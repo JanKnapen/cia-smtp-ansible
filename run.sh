@@ -2,26 +2,28 @@
 set -e
 
 # Usage:
-#   ./run.sh stage_id [-d domain] [-ms mailserver_ip]
+#   ./run.sh -s stage_id [-d domain] [-ms mailserver_ip]
 # Examples:
-#   ./run.sh stage1
-#   ./run.sh stage3 -d example.com
-#   ./run.sh stage4 -d example.com -ms 145.100.105.111
+#   ./run.sh -s 1
+#   ./run.sh -s 3 -d example.com
+#   ./run.sh -s 4 -d example.com -ms 145.100.105.111
 
 # --- Parse arguments ---
 if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 stage_id [-d domain] [-ms mailserver_ip]"
+  echo "Usage: $0 -s stage_id [-d domain] [-ms mailserver_ip]"
   exit 1
 fi
 
-STAGE="$1"
-shift
-
+STAGE=""
 DOMAIN_FROM_ARG=""
 MAILSERVER_FROM_ARG=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    -s)
+      STAGE="$2"
+      shift 2
+      ;;
     -d)
       DOMAIN_FROM_ARG="$2"
       shift 2
@@ -32,11 +34,17 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       echo "❌ Unknown option: $1"
-      echo "Usage: $0 stage_id [-d domain] [-ms mailserver_ip]"
+      echo "Usage: $0 -s stage_id [-d domain] [-ms mailserver_ip]"
       exit 1
       ;;
   esac
 done
+
+if [[ -z "$STAGE" ]]; then
+  echo "❌ Missing required -s stage_id"
+  echo "Usage: $0 -s stage_id [-d domain] [-ms mailserver_ip]"
+  exit 1
+fi
 
 # --- Load .env file safely ---
 if [[ ! -f .env ]]; then
@@ -66,29 +74,29 @@ fi
 
 # --- Set up stage-based environment ---
 case "$STAGE" in
-  stage1)
+  1)
     export ENABLE_SPF=false
     export ENABLE_DKIM=false
     export ENABLE_DMARC=false
     ;;
-  stage2)
+  2)
     export ENABLE_SPF=true
     export ENABLE_DKIM=false
     export ENABLE_DMARC=false
     ;;
-  stage3)
+  3)
     export ENABLE_SPF=true
     export ENABLE_DKIM=true
     export ENABLE_DMARC=false
     ;;
-  stage4)
+  4)
     export ENABLE_SPF=true
     export ENABLE_DKIM=true
     export ENABLE_DMARC=true
     ;;
   *)
     echo "❌ Unknown stage: $STAGE"
-    echo "Usage: $0 {stage1|stage2|stage3|stage4} [-d domain] [-ms mailserver_ip]"
+    echo "Usage: $0 -s {1|2|3|4} [-d domain] [-ms mailserver_ip]"
     exit 1
     ;;
 esac

@@ -31,7 +31,7 @@ ANSIBLE_USER=ubuntu
 4. Ensure your servers are accessible via SSH and your user has sudo privileges.
 5. Run the playbook:
 ```bash
-./run.sh stage_id [-d yourdomain.com] [-ms mailserver_ip]
+./run.sh -s stage_id [-d yourdomain.com] [-ms mailserver_ip]
 ```
 🧩 Optional arguments overrides
 
@@ -39,13 +39,13 @@ By default, the script reads `DOMAIN` and `IP1` from `.env`.
 You can override these temporarily using flags, examples:
 ```bash
 # Use values from .env
-./run.sh stage2
+./run.sh -s 2
 
 # Override domain only
-./run.sh stage3 -d yourdomain.com
+./run.sh -s 3 -d yourdomain.com
 
 # Override both domain and mailserver IP
-./run.sh stage4 -d yourdomain.com -ms 192.168.102.145
+./run.sh -s 4 -d yourdomain.com -ms 192.168.102.145
 ```
 In these examples, the provided flags temporarily override `.env` values for that run only.
 
@@ -73,7 +73,7 @@ The setup process is divided into **several stages**, allowing you to deploy you
 ### Stage 1 — Initial Setup (Baseline)
 Run:
 ```bash
-./run.sh stage1
+./run.sh-s 1
 ```
 This stage:
 - Deploys all three servers (DNS master, DNS slave, and mail gateway)
@@ -86,7 +86,7 @@ Use this stage while testing connectivity or before your mail server is ready to
 ### Stage 2 — SPF Enforcement
 Run:
 ```bash
-./run.sh stage2
+./run.sh -s 2
 ```
 This stage:
 - Re-runs the same Ansible playbooks
@@ -100,7 +100,7 @@ Use this stage once your mail server is properly configured and ready for real e
 ### Stage 3 — DKIM
 Run:
 ```bash
-./run.sh stage3
+./run.sh -s 3
 ```
 This stage:
 - Keeps everything from Stage 2 (DNS + Mail + SPF)
@@ -125,7 +125,7 @@ DKIM: PASS (signature verified)
 ## Stage 4 — DMARC Enforcement
 Run:
 ```bash
-./run.sh stage4
+./run.sh -s 4
 ```
 This stage:
 - Keeps everything from Stage 3 (DNS + Mail + SPF + DKIM)
