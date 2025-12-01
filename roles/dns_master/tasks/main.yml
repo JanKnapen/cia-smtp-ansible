@@ -18,6 +18,9 @@
     state: directory
     mode: '0755'
 
+- name: Remove all existing zone files to ensure clean state
+  shell: rm -f /etc/bind/zones/db.*
+  changed_when: true
 
 - name: Configure named.conf.local for all domains
   copy:
