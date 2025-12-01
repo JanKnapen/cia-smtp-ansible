@@ -63,7 +63,11 @@
     domain: "{{ item.0 }}"
     mail_ip: "{{ item.1 }}"
   loop: "{{ domains | zip(mail_ips) | list }}"
-  when: enable_spf | bool
+  loop_control:
+    index_var: domain_idx
+  when: 
+    - enable_spf | bool
+    - domain_idx >= 1  # Skip stage 1 (index 0), include stages 2-4 (index 1-3)
 
 - name: Include DKIM DNS record setup if enabled for each domain
   include_tasks: dkim.yml
@@ -71,7 +75,11 @@
     domain: "{{ item.0 }}"
     mail_ip: "{{ item.1 }}"
   loop: "{{ domains | zip(mail_ips) | list }}"
-  when: enable_dkim | bool
+  loop_control:
+    index_var: domain_idx
+  when:
+    - enable_dkim | bool
+    - domain_idx >= 2  # Skip stages 1-2 (index 0-1), include stages 3-4 (index 2-3)
 
 - name: Include DMARC DNS record setup if enabled for each domain
   include_tasks: dmarc.yml
@@ -79,7 +87,11 @@
     domain: "{{ item.0 }}"
     mail_ip: "{{ item.1 }}"
   loop: "{{ domains | zip(mail_ips) | list }}"
-  when: enable_dmarc | bool
+  loop_control:
+    index_var: domain_idx
+  when:
+    - enable_dmarc | bool
+    - domain_idx >= 3  # Skip stages 1-3 (index 0-2), include stage 4 only (index 3)
 
 - name: Configure named.conf.options
   copy:
