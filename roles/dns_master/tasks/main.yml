@@ -18,10 +18,12 @@
     state: directory
     mode: '0755'
 
-- name: Configure named.conf.local
+
+- name: Configure named.conf.local for all domains
   copy:
     dest: /etc/bind/named.conf.local
     content: |
+      {% for domain in domains %}
       zone "{{ domain }}" {
           type master;
           file "/etc/bind/zones/db.{{ domain }}";
@@ -29,14 +31,19 @@
           allow-transfer { {{ slave_ip }}; };
           also-notify { {{ slave_ip }}; };
       };
+      {% endfor %}
 
-- name: Create zone file for {{ domain }}
+- name: Create zone file for each domain
   template:
     src: db.domain.j2
-    dest: /etc/bind/zones/db.{{ domain }}
+    dest: "/etc/bind/zones/db.{{ item.0 }}"
     owner: root
     group: bind
     mode: 0644
+  loop: "{{ domains | zip(mail_ips) | list }}"
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
 
 - name: Configure named.conf.options
   copy:
@@ -50,20 +57,45 @@
           dnssec-validation auto;
       };
 
-- name: Include SPF DNS record setup if enabled
+- name: Include SPF DNS record setup if enabled for each domain
   include_tasks: spf.yml
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+  loop: "{{ domains | zip(mail_ips) | list }}"
   when: enable_spf | bool
 
-- name: Include DKIM DNS record setup if enabled
+- name: Include DKIM DNS record setup if enabled for each domain
   include_tasks: dkim.yml
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+  loop: "{{ domains | zip(mail_ips) | list }}"
   when: enable_dkim | bool
 
-- name: Include DMARC DNS record setup if enabled
+- name: Include DMARC DNS record setup if enabled for each domain
   include_tasks: dmarc.yml
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+  loop: "{{ domains | zip(mail_ips) | list }}"
   when: enable_dmarc | bool
+
+- name: Configure named.conf.options
+  copy:
+    dest: /etc/bind/named.conf.options
+    content: |
+      options {
+          directory "/var/cache/bind";
+          recursion no;
+          allow-query { any; };
+          listen-on { any; };
+          dnssec-validation auto;
+      };
 
 - name: Restart bind9
   service:
     name: bind9
     state: restarted
+
 

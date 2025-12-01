@@ -1,5 +1,6 @@
 ---
-- name: Check if DKIM public key exists on mail server
+
+- name: Check if DKIM public key exists on the mail server
   ansible.builtin.stat:
     path: "/etc/opendkim/keys/{{ domain }}/default.txt"
   delegate_to: "{{ mail_ip }}"
@@ -11,34 +12,22 @@
     src: "/etc/opendkim/keys/{{ domain }}/default.txt"
   delegate_to: "{{ mail_ip }}"
   register: dkim_key_data
-  when:
+  when: 
     - enable_dkim | bool
-    - dkim_key_file.stat.exists
+    - dkim_key_file.stat.exists | default(false)
 
-- name: Extract DKIM public key string
-  set_fact:
-    dkim_txt_record: "{{ (dkim_key_data.content | b64decode)
-      | regex_replace('\\s+', ' ')
-      | regex_replace('.*IN TXT \\( \"(v=DKIM1;.*)\".*', '\\1') }}"
-  when:
-    - enable_dkim | bool
-    - dkim_key_file.stat.exists
-
-- name: Write DKIM public key into DNS zone file
+- name: Write DKIM public key
   blockinfile:
     path: "/etc/bind/zones/db.{{ domain }}"
-    marker: "; {mark} ANSIBLE MANAGED BLOCK: DKIM"
-    block: |
-      default._domainkey IN TXT "{{ dkim_txt_record }}"
-  when:
+    marker: "; {mark} ANSIBLE MANAGED BLOCK: DKIM {{ mail_ip }}"
+    block: "{{ (dkim_key_data.content | b64decode) | regex_replace(';[^\"]*$', '', multiline=True) }}"
+  when: 
     - enable_dkim | bool
-    - dkim_key_file.stat.exists
+    - dkim_key_file.stat.exists | default(false)
 
 - name: Restart Bind9 after adding DKIM record
   service:
     name: bind9
     state: restarted
-  when:
-    - enable_dkim | bool
-    - dkim_key_file.stat.exists
+  when: enable_dkim | bool
 
