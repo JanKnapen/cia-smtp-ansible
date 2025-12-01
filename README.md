@@ -15,10 +15,21 @@ cp example.env .env
 ```
 2. Edit `.env` and fill in your real values:
 ```bash
-DOMAIN=yourdomain.com
-IP1=1.2.3.4
-IP2=1.2.3.5
-IP3=1.2.3.6
+# For multi-stage/multi-mailserver setup:
+DOMAIN_1=yourdomain1.com
+DOMAIN_2=yourdomain2.com
+DOMAIN_3=yourdomain3.com
+DOMAIN_4=yourdomain4.com
+
+IP1_1=1.2.3.4     # Mail server 1
+IP1_2=1.2.3.5     # Mail server 2
+IP1_3=1.2.3.6     # Mail server 3
+IP1_4=1.2.3.7     # Mail server 4
+
+# Shared DNS servers
+IP2=1.2.3.8       # Master DNS
+IP3=1.2.3.9       # Slave DNS
+
 ANSIBLE_USER=ubuntu
 ```
 3. Point your domain to your DNS servers. In your **domain registrar’s DNS settings** (for example, TransIP, Namecheap, or GoDaddy), you need to set the nameservers for your domain to point to your two DNS servers.
@@ -29,25 +40,27 @@ ANSIBLE_USER=ubuntu
 | **ns2** | `ns2.yourdomain.com` | IP3 |
 
 4. Ensure your servers are accessible via SSH and your user has sudo privileges.
-5. Run the playbook:
-```bash
-./run.sh -s stage_id [-d yourdomain.com] [-ms mailserver_ip]
-```
-🧩 Optional arguments overrides
 
-By default, the script reads `DOMAIN` and `IP1` from `.env`.
-You can override these temporarily using flags, examples:
+5. Run the playbook for a single stage (as before):
 ```bash
-# Use values from .env
 ./run.sh -s 2
-
-# Override domain only
 ./run.sh -s 3 -d yourdomain.com
-
-# Override both domain and mailserver IP
 ./run.sh -s 4 -d yourdomain.com -ms 192.168.102.145
 ```
 In these examples, the provided flags temporarily override `.env` values for that run only.
+
+### 🚀 Multi-stage/multi-mailserver setup
+
+To set up all four mailservers (ms1–ms4) with their respective domains and stages in one go, use:
+```bash
+./run.sh -s all
+```
+This will:
+- Set up stage 1 on mailserver 1 with domain 1
+- Set up stage 2 on mailserver 2 with domain 2
+- Set up stage 3 on mailserver 3 with domain 3
+- Set up stage 4 on mailserver 4 with domain 4
+All using the same two DNS servers (IP2 and IP3) for each run.
 
 6. Verify DNS setup (DNS propagation usually takes between 15–60 minutes):
 ```bash
@@ -73,7 +86,7 @@ The setup process is divided into **several stages**, allowing you to deploy you
 ### Stage 1 — Initial Setup (Baseline)
 Run:
 ```bash
-./run.sh-s 1
+./run.sh -s 1
 ```
 This stage:
 - Deploys all three servers (DNS master, DNS slave, and mail gateway)

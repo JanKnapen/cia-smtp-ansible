@@ -3,10 +3,12 @@ set -e
 
 # Usage:
 #   ./run.sh -s stage_id [-d domain] [-ms mailserver_ip]
+#   ./run.sh -s all
 # Examples:
 #   ./run.sh -s 1
 #   ./run.sh -s 3 -d example.com
 #   ./run.sh -s 4 -d example.com -ms 145.100.105.111
+#   ./run.sh -s all
 
 # --- Parse arguments ---
 if [[ $# -lt 1 ]]; then
@@ -40,6 +42,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+
 if [[ -z "$STAGE" ]]; then
   echo "❌ Missing required -s stage_id"
   echo "Usage: $0 -s stage_id [-d domain] [-ms mailserver_ip]"
@@ -56,52 +59,43 @@ set -o allexport
 source <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' .env | sed 's/\r$//')
 set +o allexport
 
-# --- Override DOMAIN if passed ---
-if [[ -n "$DOMAIN_FROM_ARG" ]]; then
-  export DOMAIN="$DOMAIN_FROM_ARG"
-  echo "🔄 Overriding domain from argument: DOMAIN=$DOMAIN"
-else
-  echo "📦 Using domain from .env: DOMAIN=$DOMAIN"
+
+
+# --- Multi-stage (all) logic ---
+if [[ "$STAGE" == "all" ]]; then
+  echo "🚀 Running Ansible for all mailservers and DNS servers..."
+  # Export all domains and IPs for multi-stage setup
+  export ACTIVE_DOMAINS="${DOMAIN_1},${DOMAIN_2},${DOMAIN_3},${DOMAIN_4}"
+  export ACTIVE_MAIL_IPS="${IP1_1},${IP1_2},${IP1_3},${IP1_4}"
+  ansible-playbook -i inventory.yml playbook.yml
+  exit 0
 fi
 
-# --- Override IP1 if passed ---
-if [[ -n "$MAILSERVER_FROM_ARG" ]]; then
-  export IP1="$MAILSERVER_FROM_ARG"
-  echo "🔄 Overriding mailserver IP from argument: IP1=$IP1"
-else
-  echo "📦 Using mailserver IP from .env: IP1=$IP1"
-fi
 
-# --- Set up stage-based environment ---
+# --- Single-stage logic (limit to one mail host) ---
+
 case "$STAGE" in
-  1)
-    export ENABLE_SPF=false
-    export ENABLE_DKIM=false
-    export ENABLE_DMARC=false
-    ;;
-  2)
-    export ENABLE_SPF=true
-    export ENABLE_DKIM=false
-    export ENABLE_DMARC=false
-    ;;
-  3)
-    export ENABLE_SPF=true
-    export ENABLE_DKIM=true
-    export ENABLE_DMARC=false
-    ;;
-  4)
-    export ENABLE_SPF=true
-    export ENABLE_DKIM=true
-    export ENABLE_DMARC=true
+  1|2|3|4)
+    MAIL_HOST="ms$STAGE"
+    # If -d or -ms are provided, override DOMAIN_n and IP1_n for this run
+    if [[ -n "$DOMAIN_FROM_ARG" ]]; then
+      export DOMAIN_$STAGE="$DOMAIN_FROM_ARG"
+      echo "🔄 Overriding DOMAIN_$STAGE: $DOMAIN_FROM_ARG"
+    fi
+    if [[ -n "$MAILSERVER_FROM_ARG" ]]; then
+      export IP1_$STAGE="$MAILSERVER_FROM_ARG"
+      echo "🔄 Overriding IP1_$STAGE: $MAILSERVER_FROM_ARG"
+    fi
+    # Export only the active domain and mailserver IP for single-stage setup
+    export ACTIVE_DOMAINS="$(eval echo \${DOMAIN_${STAGE}})"
+    export ACTIVE_MAIL_IPS="$(eval echo \${IP1_${STAGE}})"
+    echo "🚀 Running Ansible for $MAIL_HOST and DNS servers..."
+    ansible-playbook -i inventory.yml playbook.yml --limit "$MAIL_HOST,dns_master,dns_slave"
     ;;
   *)
     echo "❌ Unknown stage: $STAGE"
-    echo "Usage: $0 -s {1|2|3|4} [-d domain] [-ms mailserver_ip]"
+    echo "Usage: $0 -s {1|2|3|4|all}"
     exit 1
     ;;
 esac
-
-# --- Run ansible ---
-echo "🚀 Running Ansible for $DOMAIN ($STAGE) with IP $IP1..."
-ansible-playbook -i inventory.yml playbook.yml
 

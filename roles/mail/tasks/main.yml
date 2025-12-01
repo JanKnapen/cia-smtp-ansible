@@ -15,6 +15,12 @@
     state: present
     update_cache: yes
 
+- name: Remove old DKIM keys directory to ensure clean state
+  file:
+    path: /etc/opendkim/keys
+    state: absent
+  when: enable_dkim | bool
+
 - name: Configure Postfix main.cf
   ansible.builtin.blockinfile:
     path: /etc/postfix/main.cf

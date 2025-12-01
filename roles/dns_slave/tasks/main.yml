@@ -11,15 +11,21 @@
     state: present
     update_cache: yes
 
-- name: Configure named.conf.local for slave zone
+- name: Remove all existing cached zone files to ensure clean state
+  shell: rm -f /var/cache/bind/db.*
+  changed_when: true
+
+- name: Configure named.conf.local for all slave zones
   copy:
     dest: /etc/bind/named.conf.local
     content: |
+      {% for domain in domains %}
       zone "{{ domain }}" {
           type slave;
           file "/var/cache/bind/db.{{ domain }}";
           masters { {{ master_ip }}; };
       };
+      {% endfor %}
 
 - name: Configure named.conf.options
   copy:
@@ -38,13 +44,17 @@
     name: bind9
     state: restarted
 
-- name: Force zone retransfer from master
+- name: Force zone retransfer from master for each domain
   command: "rndc retransfer {{ domain }}"
   register: retransfer_result
   changed_when: "'transfer started' in retransfer_result.stderr or 'Transfer started' in retransfer_result.stdout"
   failed_when: false
+  loop: "{{ domains }}"
+  loop_control:
+    loop_var: domain
 
-- name: Show retransfer result
+- name: Show retransfer result for each domain
   debug:
-    var: retransfer_result.stdout
+    var: retransfer_result.results
+
 
