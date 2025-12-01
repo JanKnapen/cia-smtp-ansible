@@ -86,7 +86,7 @@ The setup process is divided into **several stages**, allowing you to deploy you
 ### Stage 1 — Initial Setup (Baseline)
 Run:
 ```bash
-./run.sh-s 1
+./run.sh -s 1
 ```
 This stage:
 - Deploys all three servers (DNS master, DNS slave, and mail gateway)
