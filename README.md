@@ -7,7 +7,7 @@ This repository contains Ansible playbooks to configure:
 
 It uses environment variables (`.env`) to safely store configuration details like your IP addresses and domain name.
 
-## ⚙️ Setup
+## ⚙️ VM Environment Setup
 
 1. Copy the example environment file:
 ```bash
@@ -48,6 +48,51 @@ ANSIBLE_USER=ubuntu
 ./run.sh -s 4 -d yourdomain.com -ms 192.168.102.145
 ```
 In these examples, the provided flags temporarily override `.env` values for that run only.
+
+## ⚙️ PTR Records Setup
+The following steps will work for your student server if PTR records are delegated to your publicly accessible server. We will then install bind9 on the hypervisor to host our own PTR records for domains connected to the VMs.
+
+```bash
+apt-get update
+apt-get install bind9
+```
+
+In `/etc/bind/named.conf.local`:
+```conf
+zone "67.45.34.12.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.12.34.56.78.rev";
+};
+```
+
+And then in `/etc/bind/db.12.34.56.78.rev`:
+```conf
+$TTL 86400
+@   IN SOA hostname.studlab.master.nl. hostmaster.hostname.studlab.master.nl. (
+        2025110901 ; Serial
+        3600       ; Refresh
+        1800       ; Retry
+        604800     ; Expire
+        86400 )    ; Minimum TTL
+    IN NS  hostname.studlab.master.nl.
+    IN PTR mail.testingdomainname.nl.
+```
+
+Then
+```bash
+named-checkconf
+systemctl edit named.service
+
+# Add new with the following two lines:
+# [Service]
+# Type=simple
+
+systemctl daemon-reload
+systemctl restart bind9
+```
+
+Now the PTR should be configured correctly.
+
 
 ### 🚀 Multi-stage/multi-mailserver setup
 
