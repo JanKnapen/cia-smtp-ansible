@@ -7,7 +7,7 @@ This repository contains Ansible playbooks to configure:
 
 It uses environment variables (`.env`) to safely store configuration details like your IP addresses and domain name.
 
-## ⚙️ Setup
+## ⚙️ VM Environment Setup
 
 1. Copy the example environment file:
 ```bash
@@ -30,7 +30,7 @@ IP1_4=1.2.3.7     # Mail server 4
 IP2=1.2.3.8       # Master DNS
 IP3=1.2.3.9       # Slave DNS
 
-ANSIBLE_USER=ubuntu
+ANSIBLE_USER=ansibleuser
 ```
 3. Point your domain to your DNS servers. In your **domain registrar’s DNS settings** (for example, TransIP, Namecheap, or GoDaddy), you need to set the nameservers for your domain to point to your two DNS servers.
 
@@ -39,7 +39,23 @@ ANSIBLE_USER=ubuntu
 | **ns1** | `ns1.yourdomain.com` | IP2 |
 | **ns2** | `ns2.yourdomain.com` | IP3 |
 
-4. Ensure your servers are accessible via SSH and your user has sudo privileges.
+4. Ensure your servers are accessible via SSH and your user has sudo privileges AND PASSWORDLESS SUDO.
+
+To configure passwordless sudo for the user run the following commands:
+```bash
+# Running `sudo su` should ask for `ansibleuser` password
+sudo su
+
+# Add passwordless sudo and exit
+USER="ansibleuser"
+echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER
+sudo chmod 440 /etc/sudoers.d/$USER
+exit
+
+# Now after logging in again via SSH it should not ask for user password anymore
+sudo su
+```
+
 
 5. Run the playbook for a single stage (as before):
 ```bash
@@ -48,6 +64,52 @@ ANSIBLE_USER=ubuntu
 ./run.sh -s 4 -d yourdomain.com -ms 192.168.102.145
 ```
 In these examples, the provided flags temporarily override `.env` values for that run only.
+
+## ⚙️ PTR Records Setup
+The following steps will work for your student server if PTR records are delegated to your publicly accessible server. We will then install bind9 on the hypervisor to host our own PTR records for domains connected to the VMs.
+
+```bash
+apt-get update
+apt-get install bind9
+```
+
+In `/etc/bind/named.conf.local`:
+```conf
+zone "78.56.34.12.in-addr.arpa" {
+    type master;
+    file "/etc/bind/db.12.34.56.78.rev";
+};
+```
+
+And then in `/etc/bind/db.12.34.56.78.rev`:
+```conf
+$TTL 86400
+@   IN SOA hostname.studlab.master.nl. hostmaster.hostname.studlab.master.nl. (
+        2025110901 ; Serial
+        3600       ; Refresh
+        1800       ; Retry
+        604800     ; Expire
+        86400 )    ; Minimum TTL
+    IN NS  hostname.studlab.master.nl.
+    IN PTR mail.testingdomainname.nl.
+```
+
+Then
+```bash
+named-checkconf
+systemctl edit named.service
+
+# Add new with the following two lines:
+# [Service]
+# Type=simple
+
+systemctl daemon-reload
+systemctl restart bind9
+systemctl status bind9
+```
+
+Now the PTR should be configured correctly.
+
 
 ### 🚀 Multi-stage/multi-mailserver setup
 
