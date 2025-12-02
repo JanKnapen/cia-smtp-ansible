@@ -8,8 +8,10 @@ all:
     mail:
       hosts:
         ms1:
+          ansible_connection: ssh
           ansible_host: "{{ lookup('env', 'IP1_1') }}"
           ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          ansible_python_interpreter: /usr/bin/python3
           hostname: "mail.{{ lookup('env', 'DOMAIN_1') }}"
           domain: "{{ lookup('env', 'DOMAIN_1') }}"
           stage: 1
@@ -17,8 +19,10 @@ all:
           enable_dkim: false
           enable_dmarc: false
         ms2:
+          ansible_connection: ssh
           ansible_host: "{{ lookup('env', 'IP1_2') }}"
           ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          ansible_python_interpreter: /usr/bin/python3
           hostname: "mail.{{ lookup('env', 'DOMAIN_2') }}"
           domain: "{{ lookup('env', 'DOMAIN_2') }}"
           stage: 2
@@ -26,8 +30,10 @@ all:
           enable_dkim: false
           enable_dmarc: false
         ms3:
+          ansible_connection: ssh
           ansible_host: "{{ lookup('env', 'IP1_3') }}"
           ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          ansible_python_interpreter: /usr/bin/python3
           hostname: "mail.{{ lookup('env', 'DOMAIN_3') }}"
           domain: "{{ lookup('env', 'DOMAIN_3') }}"
           stage: 3
@@ -35,8 +41,10 @@ all:
           enable_dkim: true
           enable_dmarc: false
         ms4:
+          ansible_connection: ssh
           ansible_host: "{{ lookup('env', 'IP1_4') }}"
           ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          ansible_python_interpreter: /usr/bin/python3
           hostname: "mail.{{ lookup('env', 'DOMAIN_4') }}"
           domain: "{{ lookup('env', 'DOMAIN_4') }}"
           stage: 4
@@ -47,8 +55,10 @@ all:
     dns_master:
       hosts:
         dns_master:
+          ansible_connection: ssh
           ansible_host: "{{ lookup('env', 'IP2') }}"
           ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          ansible_python_interpreter: /usr/bin/python3
           hostname: "ns1.{{ lookup('env', 'ACTIVE_DOMAINS').split(',')[0] }}"
           master_ip: "{{ lookup('env', 'IP2') }}"
           slave_ip: "{{ lookup('env', 'IP3') }}"
@@ -61,8 +71,10 @@ all:
     dns_slave:
       hosts:
         dns_slave:
+          ansible_connection: ssh
           ansible_host: "{{ lookup('env', 'IP3') }}"
           ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          ansible_python_interpreter: /usr/bin/python3
           hostname: "ns2.{{ lookup('env', 'ACTIVE_DOMAINS').split(',')[0] }}"
           master_ip: "{{ lookup('env', 'IP2') }}"
           domains: "{{ lookup('env', 'ACTIVE_DOMAINS').split(',') }}"
