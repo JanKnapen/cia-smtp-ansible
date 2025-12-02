@@ -30,7 +30,7 @@ IP1_4=1.2.3.7     # Mail server 4
 IP2=1.2.3.8       # Master DNS
 IP3=1.2.3.9       # Slave DNS
 
-ANSIBLE_USER=ubuntu
+ANSIBLE_USER=ansibleuser
 ```
 3. Point your domain to your DNS servers. In your **domain registrar’s DNS settings** (for example, TransIP, Namecheap, or GoDaddy), you need to set the nameservers for your domain to point to your two DNS servers.
 
@@ -39,7 +39,23 @@ ANSIBLE_USER=ubuntu
 | **ns1** | `ns1.yourdomain.com` | IP2 |
 | **ns2** | `ns2.yourdomain.com` | IP3 |
 
-4. Ensure your servers are accessible via SSH and your user has sudo privileges.
+4. Ensure your servers are accessible via SSH and your user has sudo privileges AND PASSWORDLESS SUDO.
+
+To configure passwordless sudo for the user run the following commands:
+```bash
+# Running `sudo su` should ask for `ansibleuser` password
+sudo su
+
+# Add passwordless sudo and exit
+USER="ansibleuser"
+echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER
+sudo chmod 440 /etc/sudoers.d/$USER
+exit
+
+# Now after logging in again via SSH it should not ask for user password anymore
+sudo su
+```
+
 
 5. Run the playbook for a single stage (as before):
 ```bash
@@ -89,6 +105,7 @@ systemctl edit named.service
 
 systemctl daemon-reload
 systemctl restart bind9
+systemctl status bind9
 ```
 
 Now the PTR should be configured correctly.
