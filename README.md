@@ -59,7 +59,7 @@ apt-get install bind9
 
 In `/etc/bind/named.conf.local`:
 ```conf
-zone "67.45.34.12.in-addr.arpa" {
+zone "78.56.34.12.in-addr.arpa" {
     type master;
     file "/etc/bind/db.12.34.56.78.rev";
 };
