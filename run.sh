@@ -4,11 +4,13 @@ set -e
 # Usage:
 #   ./run.sh -s stage_id [-d domain] [-ms mailserver_ip]
 #   ./run.sh -s all
+#   ./run.sh -s spoof
 # Examples:
 #   ./run.sh -s 1
 #   ./run.sh -s 3 -d example.com
 #   ./run.sh -s 4 -d example.com -ms 145.100.105.111
-#   ./run.sh -s all
+#   ./run.sh -s all       # Run stages 1-4 only
+#   ./run.sh -s spoof     # Run stages 1-4 + attacker VM (stage 5)
 
 # --- Parse arguments ---
 if [[ $# -lt 1 ]]; then
@@ -63,7 +65,17 @@ set +o allexport
 
 # --- Multi-stage (all) logic ---
 if [[ "$STAGE" == "all" ]]; then
-  echo "🚀 Running Ansible for all mailservers and DNS servers..."
+  echo "🚀 Running Ansible for stages 1-4 (all mailservers and DNS servers)..."
+  # Export all domains and IPs for multi-stage setup
+  export ACTIVE_DOMAINS="${DOMAIN_1},${DOMAIN_2},${DOMAIN_3},${DOMAIN_4}"
+  export ACTIVE_MAIL_IPS="${IP1_1},${IP1_2},${IP1_3},${IP1_4}"
+  ansible-playbook -i inventory.yml playbook.yml --limit "mail,dns_master,dns_slave"
+  exit 0
+fi
+
+# --- Spoof mode (all stages + attacker) ---
+if [[ "$STAGE" == "spoof" ]]; then
+  echo "🚀 Running Ansible for stages 1-4 + Stage 5 (attacker VM)..."
   # Export all domains and IPs for multi-stage setup
   export ACTIVE_DOMAINS="${DOMAIN_1},${DOMAIN_2},${DOMAIN_3},${DOMAIN_4}"
   export ACTIVE_MAIL_IPS="${IP1_1},${IP1_2},${IP1_3},${IP1_4}"
@@ -94,7 +106,7 @@ case "$STAGE" in
     ;;
   *)
     echo "❌ Unknown stage: $STAGE"
-    echo "Usage: $0 -s {1|2|3|4|all}"
+    echo "Usage: $0 -s {1|2|3|4|all|spoof}"
     exit 1
     ;;
 esac
