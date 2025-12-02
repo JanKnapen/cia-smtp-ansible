@@ -25,9 +25,3 @@
     - enable_dkim | bool
     - dkim_key_file.stat.exists | default(false)
 
-- name: Restart Bind9 after adding DKIM record
-  service:
-    name: bind9
-    state: restarted
-  when: enable_dkim | bool
-
