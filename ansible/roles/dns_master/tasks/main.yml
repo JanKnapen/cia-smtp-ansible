@@ -1,0 +1,116 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Install Bind9 packages
+  apt:
+    name:
+      - bind9
+      - bind9utils
+      - bind9-doc
+    state: present
+    update_cache: yes
+
+- name: Create zone directory
+  file:
+    path: /etc/bind/zones
+    state: directory
+    mode: '0755'
+
+- name: Remove all existing zone files to ensure clean state
+  shell: rm -f /etc/bind/zones/db.*
+  changed_when: true
+
+- name: Configure named.conf.local for all domains
+  copy:
+    dest: /etc/bind/named.conf.local
+    content: |
+      {% for domain in domains %}
+      zone "{{ domain }}" {
+          type master;
+          file "/etc/bind/zones/db.{{ domain }}";
+          allow-update { none; };
+          allow-transfer { {{ slave_ip }}; };
+          also-notify { {{ slave_ip }}; };
+      };
+      {% endfor %}
+
+- name: Create zone file for each domain
+  template:
+    src: db.domain.j2
+    dest: "/etc/bind/zones/db.{{ item.0 }}"
+    owner: root
+    group: bind
+    mode: 0644
+  loop: "{{ domains | zip(mail_ips) | list }}"
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+
+- name: Configure named.conf.options
+  copy:
+    dest: /etc/bind/named.conf.options
+    content: |
+      options {
+          directory "/var/cache/bind";
+          recursion no;
+          allow-query { any; };
+          listen-on { any; };
+          dnssec-validation auto;
+      };
+
+- name: Include SPF DNS record setup if enabled for each domain
+  include_tasks: spf.yml
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+  loop: "{{ domains | zip(mail_ips) | list }}"
+  loop_control:
+    index_var: domain_idx
+  when: 
+    - enable_spf | bool
+    - domain_idx >= 1  # Skip stage 1 (index 0), include stages 2-4 (index 1-3)
+
+- name: Include DKIM DNS record setup if enabled for each domain
+  include_tasks: dkim.yml
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+  loop: "{{ domains | zip(mail_ips) | list }}"
+  loop_control:
+    index_var: domain_idx
+  when:
+    - enable_dkim | bool
+    - domain_idx >= 2  # Skip stages 1-2 (index 0-1), include stages 3-4 (index 2-3)
+
+- name: Include DMARC DNS record setup if enabled for each domain
+  include_tasks: dmarc.yml
+  vars:
+    domain: "{{ item.0 }}"
+    mail_ip: "{{ item.1 }}"
+  loop: "{{ domains | zip(mail_ips) | list }}"
+  loop_control:
+    index_var: domain_idx
+  when:
+    - enable_dmarc | bool
+    - domain_idx >= 3  # Skip stages 1-3 (index 0-2), include stage 4 only (index 3)
+
+- name: Configure named.conf.options
+  copy:
+    dest: /etc/bind/named.conf.options
+    content: |
+      options {
+          directory "/var/cache/bind";
+          recursion no;
+          allow-query { any; };
+          listen-on { any; };
+          dnssec-validation auto;
+      };
+
+- name: Restart bind9
+  service:
+    name: bind9
+    state: restarted
+
+

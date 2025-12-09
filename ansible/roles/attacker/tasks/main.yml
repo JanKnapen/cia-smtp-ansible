@@ -1,0 +1,28 @@
+---
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ hostname }}"
+
+- name: Install Swaks for email spoofing
+  apt:
+    name: swaks
+    state: present
+    update_cache: yes
+
+- name: Copy send_emails.sh script to attacker
+  copy:
+    src: "{{ playbook_dir }}/files/send_emails.sh"
+    dest: "/home/{{ ansible_user }}/send_emails.sh"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Display information about Stage 5
+  debug:
+    msg: 
+      - "Stage 5 (Spoofing Attack) setup complete!"
+      - "Swaks has been installed for email spoofing."
+      - "send_emails.sh script is available at: /home/{{ ansible_user }}/send_emails.sh"
+      - "To send spoofing emails, SSH into the attacker VM and run the script manually."
+      - "Target domains: {{ target_domains | join(', ') }}"
+      - "Target mail servers: {{ target_mail_ips | join(', ') }}"

@@ -1,0 +1,78 @@
+all:
+  vars:
+    IP2: "{{ lookup('env', 'IP2') }}"               # Shared DNS master
+    IP3: "{{ lookup('env', 'IP3') }}"               # Shared DNS slave
+    ANSIBLE_USER: "{{ lookup('env', 'ANSIBLE_USER') }}"
+
+  children:
+    mail:
+      hosts:
+        ms1:
+          ansible_host: "{{ lookup('env', 'IP1_1') }}"
+          ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          hostname: "mail.{{ lookup('env', 'DOMAIN_1') }}"
+          domain: "{{ lookup('env', 'DOMAIN_1') }}"
+          stage: 1
+          enable_spf: false
+          enable_dkim: false
+          enable_dmarc: false
+        ms2:
+          ansible_host: "{{ lookup('env', 'IP1_2') }}"
+          ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          hostname: "mail.{{ lookup('env', 'DOMAIN_2') }}"
+          domain: "{{ lookup('env', 'DOMAIN_2') }}"
+          stage: 2
+          enable_spf: true
+          enable_dkim: false
+          enable_dmarc: false
+        ms3:
+          ansible_host: "{{ lookup('env', 'IP1_3') }}"
+          ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          hostname: "mail.{{ lookup('env', 'DOMAIN_3') }}"
+          domain: "{{ lookup('env', 'DOMAIN_3') }}"
+          stage: 3
+          enable_spf: true
+          enable_dkim: true
+          enable_dmarc: false
+        ms4:
+          ansible_host: "{{ lookup('env', 'IP1_4') }}"
+          ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          hostname: "mail.{{ lookup('env', 'DOMAIN_4') }}"
+          domain: "{{ lookup('env', 'DOMAIN_4') }}"
+          stage: 4
+          enable_spf: true
+          enable_dkim: true
+          enable_dmarc: true
+
+    dns_master:
+      hosts:
+        dns_master:
+          ansible_host: "{{ lookup('env', 'IP2') }}"
+          ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          hostname: "ns1.{{ lookup('env', 'ACTIVE_DOMAINS').split(',')[0] }}"
+          master_ip: "{{ lookup('env', 'IP2') }}"
+          slave_ip: "{{ lookup('env', 'IP3') }}"
+          domains: "{{ lookup('env', 'ACTIVE_DOMAINS').split(',') }}"
+          mail_ips: "{{ lookup('env', 'ACTIVE_MAIL_IPS').split(',') }}"
+          enable_spf: true
+          enable_dkim: true
+          enable_dmarc: true
+
+    dns_slave:
+      hosts:
+        dns_slave:
+          ansible_host: "{{ lookup('env', 'IP3') }}"
+          ansible_user: "{{ lookup('env', 'ANSIBLE_USER') }}"
+          hostname: "ns2.{{ lookup('env', 'ACTIVE_DOMAINS').split(',')[0] }}"
+          master_ip: "{{ lookup('env', 'IP2') }}"
+          domains: "{{ lookup('env', 'ACTIVE_DOMAINS').split(',') }}"
+
+    attacker:
+      hosts:
+        attacker:
+          ansible_host: "{{ lookup('env', 'IP_ATTACKER') }}"
+          ansible_user: "{{ lookup('env', 'SPOOF_USER') }}"
+          hostname: "attacker"
+          target_domains: "{{ lookup('env', 'ACTIVE_DOMAINS').split(',') }}"
+          target_mail_ips: "{{ lookup('env', 'ACTIVE_MAIL_IPS').split(',') }}"
+
