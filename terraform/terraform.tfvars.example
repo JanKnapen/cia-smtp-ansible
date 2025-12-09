@@ -1,0 +1,156 @@
+###################
+##### The lab #####
+###################
+
+ansible_username      = "ansibleuser"
+ansible_password      = "changme"
+root_public_key       = "ssh-ed25519 YOURKEYHERE user@project"
+root_private_key_name = "privkeyfilename"
+
+
+lxcs2404 = {
+    cia-dns-main = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-dns-main"
+        vm_id                 = 401
+        servicename           = "The main DNS server of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.4"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+
+    cia-dns-second = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-dns-second"
+        vm_id                 = 402
+        servicename           = "The secondary DNS server of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.5"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+
+    cia-mail-first = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-mail-first"
+        vm_id                 = 403
+        servicename           = "The first mail server of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.6"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+
+    cia-mail-second = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-mail-second"
+        vm_id                 = 404
+        servicename           = "The second mail server of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.7"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+
+    cia-mail-third = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-mail-third"
+        vm_id                 = 405
+        servicename           = "The third mail server of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.8"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+
+    cia-mail-fourth = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-mail-fourth"
+        vm_id                 = 406
+        servicename           = "The fourth mail server of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.9"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+
+    cia-spoof = {
+        target_node           = "pve"
+        target_pool           = "cia"
+        target_storage        = "local-lvm"
+        unprivileged          = true
+        hostname              = "cia-spoof"
+        vm_id                 = 407
+        servicename           = "The spoofing VM of the CIA project."
+        cpu_cores             = 1
+        ram                   = 1024
+        swap                  = 1024
+        boot_disk_size        = 16
+        network_interface     = "vmbr1"
+        static_ip             = "1.2.3.10"
+        gateway_ip            = "1.2.3.80"
+        onboot                = true
+        startup               = "order=2"           # ex. "order=1,up=20"
+        root_password         = "changeme"
+    }
+}
+
+### Host: Proxmox Hypervisor
+proxmox_api_url = "https://pve.your.domain:8006/api2/json"
+proxmox_api_token_id = "infra_as_code@pve!terraform-token"
+proxmox_api_token_secret = "your-pve-token-here"
