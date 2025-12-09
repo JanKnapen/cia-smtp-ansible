@@ -67,3 +67,12 @@ all:
           master_ip: "{{ lookup('env', 'IP2') }}"
           domains: "{{ lookup('env', 'ACTIVE_DOMAINS').split(',') }}"
 
+    attacker:
+      hosts:
+        attacker:
+          ansible_host: "{{ lookup('env', 'IP_ATTACKER') }}"
+          ansible_user: "{{ lookup('env', 'SPOOF_USER') }}"
+          hostname: "attacker"
+          target_domains: "{{ lookup('env', 'ACTIVE_DOMAINS').split(',') }}"
+          target_mail_ips: "{{ lookup('env', 'ACTIVE_MAIL_IPS').split(',') }}"
+

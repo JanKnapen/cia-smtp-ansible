@@ -23,3 +23,8 @@
   roles:
     - dns_slave
 
+- hosts: attacker
+  become: yes
+  roles:
+    - attacker
+
